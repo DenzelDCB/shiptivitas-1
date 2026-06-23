@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "engines": {
     "npm": "6.7.0",
-    "node": "11.10.0"
+    "node": "16.x"
   },
   "private": true,
   "dependencies": {
@@ -17,7 +17,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
