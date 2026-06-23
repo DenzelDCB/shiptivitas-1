@@ -7,20 +7,75 @@ import './Board.css';
 export default class Board extends React.Component {
   constructor(props) {
     super(props);
+
     const clients = this.getClients();
+
     this.state = {
       clients: {
-        backlog: clients.filter(client => !client.status || client.status === 'backlog'),
-        inProgress: clients.filter(client => client.status && client.status === 'in-progress'),
-        complete: clients.filter(client => client.status && client.status === 'complete'),
+        backlog: clients.filter(c => c.status === 'backlog'),
+        inProgress: clients.filter(c => c.status === 'in-progress'),
+        complete: clients.filter(c => c.status === 'complete'),
       }
-    }
+    };
+
     this.swimlanes = {
       backlog: React.createRef(),
       inProgress: React.createRef(),
       complete: React.createRef(),
-    }
+    };
   }
+
+  componentDidMount() {
+    const containers = [
+      this.swimlanes.backlog.current,
+      this.swimlanes.inProgress.current,
+      this.swimlanes.complete.current
+    ];
+
+    this.dragula = Dragula(containers);
+
+    this.dragula.on('drop', (el, target, source) => {
+      const id = el.getAttribute('data-id');
+
+      const newStatus = this.getStatusFromContainer(target);
+      const oldStatus = this.getStatusFromContainer(source);
+
+      if (!id || !newStatus) return;
+
+      this.setState(prevState => {
+        const allClients = [
+          ...prevState.clients.backlog,
+          ...prevState.clients.inProgress,
+          ...prevState.clients.complete
+        ];
+
+        const updated = allClients.map(client =>
+          client.id === id
+            ? { ...client, status: newStatus }
+            : client
+        );
+
+        return {
+          clients: {
+            backlog: updated.filter(c => c.status === 'backlog'),
+            inProgress: updated.filter(c => c.status === 'in-progress'),
+            complete: updated.filter(c => c.status === 'complete'),
+          }
+        };
+      });
+    });
+  }
+
+  getStatusFromContainer(container) {
+    if (!container) return null;
+
+    if (container === this.swimlanes.backlog.current) return 'backlog';
+    if (container === this.swimlanes.inProgress.current) return 'in-progress';
+    if (container === this.swimlanes.complete.current) return 'complete';
+
+    return null;
+  }
+
   getClients() {
     return [
       ['1','Stark, White and Abbott','Cloned Optimal Architecture', 'in-progress'],
@@ -43,16 +98,17 @@ export default class Board extends React.Component {
       ['18','Bins, Toy and Klocko','Integrated Assymetric Software', 'backlog'],
       ['19','Hodkiewicz-Hayes','Programmable Systematic Securedline', 'backlog'],
       ['20','Murphy, Lang and Ferry','Organized Explicit Access', 'backlog'],
-    ].map(companyDetails => ({
-      id: companyDetails[0],
-      name: companyDetails[1],
-      description: companyDetails[2],
-      status: companyDetails[3],
+    ].map(([id, name, description, status]) => ({
+      id,
+      name,
+      description,
+      status,
     }));
   }
+
   renderSwimlane(name, clients, ref) {
     return (
-      <Swimlane name={name} clients={clients} dragulaRef={ref}/>
+      <Swimlane name={name} clients={clients} dragulaRef={ref} />
     );
   }
 
