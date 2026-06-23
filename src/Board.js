@@ -38,7 +38,7 @@ export default class Board extends React.Component {
       const id = el.getAttribute('data-id');
 
       const newStatus = this.getStatusFromContainer(target);
-      const oldStatus = this.getStatusFromContainer(source);
+      // const oldStatus = this.getStatusFromContainer(source);
 
       if (!id || !newStatus) return;
 
